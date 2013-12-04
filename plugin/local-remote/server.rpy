@@ -21,7 +21,7 @@ class ServerConnection(LineReceiver):
         pass
 
 
-    def connectionLost(self):
+    def connectionLost(self, reason):
         sys.hub.remove(self)
 
 

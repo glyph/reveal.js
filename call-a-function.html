@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>How To Call A Function With Some Arguments</title>
+
+		<meta name="description" content="A talk about how not to be too clever.">
+		<meta name="author" content="Glyph">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+        <link rel="stylesheet" href="lib/css/custom.css">
+		<link rel="stylesheet" href="css/theme/night.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<!-- <link rel="stylesheet" href="lib/css/zenburn.css"> -->
+
+        <link rel="stylesheet" href="lib/css/tomorrow-night-bright.css"></link>
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>How to Call <br>a Function <br>with Some Arguments</h1>
+                    <h3>Or</h3>
+					<h2>Put Down the Metaclass and Step Back</h2>
+					<p>
+						<a href="http://glyph.im">Glyph</a> / <a href="http://twitter.com/glyph">@glyph</a>
+					</p>
+				</section>
+                <section>
+<pre class="trivial"><code
+>def f():
+    g()</code></pre>
+<aside class="notes">
+    This entire presentation is basically about how to do this.
+    The real trick is, I'm going to try to convince you that you ought to be doing this …
+</aside>
+                </section>
+                <section>
+<pre class="trivial"><code>def f(x):
+    g(x)</code></pre>
+<aside class="notes">
+    … instead.  Of course, calling a function with an argument is the most basic thing you could possibly do in Python, and I'm sure that I would never need to convince you that that's how you should structure your program.
+    But maybe there's somebody in the audience who isn't quite so advanced, so we should all humor them.
+    You know, asking for a friend.
+</aside>
+                </section>
+                <section>
+                    <h1 style="font-size: 15em;">?</h1>
+                    <aside class="notes">
+                        Of course, the question is, what exactly would you do <em>instead</em> of calling a function with an argument?  Let's take a look at an example.
+                    </aside>
+                </section>
+                <section>
+<pre style="font-size: 0.7em;"><code class="language-python"
+>from django.db.models import *
+
+class Poll(Model):
+    question = CharField(max_length=200)
+    pub_date = DateTimeField('date published')
+
+class Choice(Model):
+    poll = ForeignKey(Poll)
+    choice_text = CharField(max_length=200)
+    votes = IntegerField(default=0)</code></pre>
+                </section>
+                <section>
+                    <section>
+                        <h2>Metaclass Advantages</h2>
+                    </section>
+                <section>
+    <h2>Simplicity of Implementation</h2>
+
+<div class="fragment roll-in"><pre><code class="language-python" style="-webkit-column-count: 3; font-size: 4px"
+>def __new__(cls, name, bases, attrs):
+    super_new = super(ModelBase, cls).__new__
+
+    # six.with_metaclass() inserts an extra class called 'NewBase' in the
+    # inheritance tree: Model -> NewBase -> object. But the initialization
+    # should be executed only once for a given model class.
+
+    # attrs will never be empty for classes declared in the standard way
+    # (ie. with the `class` keyword). This is quite robust.
+    if name == 'NewBase' and attrs == {}:
+        return super_new(cls, name, bases, attrs)
+
+    # Also ensure initialization is only performed for subclasses of Model
+    # (excluding Model class itself).
+    parents = [b for b in bases if isinstance(b, ModelBase) and
+            not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))]
+    if not parents:
+        return super_new(cls, name, bases, attrs)
+
+    # Create the class.
+    module = attrs.pop('__module__')
+    new_class = super_new(cls, name, bases, {'__module__': module})
+    attr_meta = attrs.pop('Meta', None)
+    abstract = getattr(attr_meta, 'abstract', False)
+    if not attr_meta:
+        meta = getattr(new_class, 'Meta', None)
+    else:
+        meta = attr_meta
+    base_meta = getattr(new_class, '_meta', None)
+
+    if getattr(meta, 'app_label', None) is None:
+        # Figure out the app_label by looking one level up.
+        # For 'django.contrib.sites.models', this would be 'sites'.
+        model_module = sys.modules[new_class.__module__]
+        kwargs = {"app_label": model_module.__name__.split('.')[-2]}
+    else:
+        kwargs = {}
+
+    new_class.add_to_class('_meta', Options(meta, **kwargs))
+    if not abstract:
+        new_class.add_to_class('DoesNotExist', subclass_exception(str('DoesNotExist'),
+                tuple(x.DoesNotExist
+                      for x in parents if hasattr(x, '_meta') and not x._meta.abstract)
+                or (ObjectDoesNotExist,),
+                module, attached_to=new_class))
+        new_class.add_to_class('MultipleObjectsReturned', subclass_exception(str('MultipleObjectsReturned'),
+                tuple(x.MultipleObjectsReturned
+                      for x in parents if hasattr(x, '_meta') and not x._meta.abstract)
+                or (MultipleObjectsReturned,),
+                module, attached_to=new_class))
+        if base_meta and not base_meta.abstract:
+            # Non-abstract child classes inherit some attributes from their
+            # non-abstract parent (unless an ABC comes before it in the
+            # method resolution order).
+            if not hasattr(meta, 'ordering'):
+                new_class._meta.ordering = base_meta.ordering
+            if not hasattr(meta, 'get_latest_by'):
+                new_class._meta.get_latest_by = base_meta.get_latest_by
+
+    is_proxy = new_class._meta.proxy
+
+    # If the model is a proxy, ensure that the base class
+    # hasn't been swapped out.
+    if is_proxy and base_meta and base_meta.swapped:
+        raise TypeError("%s cannot proxy the swapped model '%s'." % (name, base_meta.swapped))
+
+    if getattr(new_class, '_default_manager', None):
+        if not is_proxy:
+            # Multi-table inheritance doesn't inherit default manager from
+            # parents.
+            new_class._default_manager = None
+            new_class._base_manager = None
+        else:
+            # Proxy classes do inherit parent's default manager, if none is
+            # set explicitly.
+            new_class._default_manager = new_class._default_manager._copy_to_model(new_class)
+            new_class._base_manager = new_class._base_manager._copy_to_model(new_class)
+
+    # Bail out early if we have already created this class.
+    m = get_model(new_class._meta.app_label, name,
+                  seed_cache=False, only_installed=False)
+    if m is not None:
+        return m
+
+    # Add all attributes to the class.
+    for obj_name, obj in attrs.items():
+        new_class.add_to_class(obj_name, obj)
+
+    # All the fields of any type declared on this model
+    new_fields = new_class._meta.local_fields + \
+                 new_class._meta.local_many_to_many + \
+                 new_class._meta.virtual_fields
+    field_names = set([f.name for f in new_fields])
+
+    # Basic setup for proxy models.
+    if is_proxy:
+        base = None
+        for parent in [cls for cls in parents if hasattr(cls, '_meta')]:
+            if parent._meta.abstract:
+                if parent._meta.fields:
+                    raise TypeError("Abstract base class containing model fields not permitted for proxy model '%s'." % name)
+                else:
+                    continue
+            if base is not None:
+                raise TypeError("Proxy model '%s' has more than one non-abstract model base class." % name)
+            else:
+                base = parent
+        if base is None:
+            raise TypeError("Proxy model '%s' has no non-abstract model base class." % name)
+        if (new_class._meta.local_fields or
+                new_class._meta.local_many_to_many):
+            raise FieldError("Proxy model '%s' contains model fields." % name)
+        new_class._meta.setup_proxy(base)
+        new_class._meta.concrete_model = base._meta.concrete_model
+    else:
+        new_class._meta.concrete_model = new_class
+
+    # Do the appropriate setup for any model parents.
+    o2o_map = dict([(f.rel.to, f) for f in new_class._meta.local_fields
+            if isinstance(f, OneToOneField)])
+
+    for base in parents:
+        original_base = base
+        if not hasattr(base, '_meta'):
+            # Things without _meta aren't functional models, so they're
+            # uninteresting parents.
+            continue
+
+        parent_fields = base._meta.local_fields + base._meta.local_many_to_many
+        # Check for clashes between locally declared fields and those
+        # on the base classes (we cannot handle shadowed fields at the
+        # moment).
+        for field in parent_fields:
+            if field.name in field_names:
+                raise FieldError('Local field %r in class %r clashes '
+                                 'with field of similar name from '
+                                 'base class %r' %
+                                    (field.name, name, base.__name__))
+        if not base._meta.abstract:
+            # Concrete classes...
+            base = base._meta.concrete_model
+            if base in o2o_map:
+                field = o2o_map[base]
+            elif not is_proxy:
+                attr_name = '%s_ptr' % base._meta.model_name
+                field = OneToOneField(base, name=attr_name,
+                        auto_created=True, parent_link=True)
+                new_class.add_to_class(attr_name, field)
+            else:
+                field = None
+            new_class._meta.parents[base] = field
+        else:
+            # .. and abstract ones.
+            for field in parent_fields:
+                new_class.add_to_class(field.name, copy.deepcopy(field))
+
+            # Pass any non-abstract parent classes onto child.
+            new_class._meta.parents.update(base._meta.parents)
+
+        # Inherit managers from the abstract base classes.
+        new_class.copy_managers(base._meta.abstract_managers)
+
+        # Proxy models inherit the non-abstract managers from their base,
+        # unless they have redefined any of them.
+        if is_proxy:
+            new_class.copy_managers(original_base._meta.concrete_managers)
+
+        # Inherit virtual fields (like GenericForeignKey) from the parent
+        # class
+        for field in base._meta.virtual_fields:
+            if base._meta.abstract and field.name in field_names:
+                raise FieldError('Local field %r in class %r clashes '\
+                                 'with field of similar name from '\
+                                 'abstract base class %r' % \
+                                    (field.name, name, base.__name__))
+            new_class.add_to_class(field.name, copy.deepcopy(field))
+
+    if abstract:
+        # Abstract base models can't be instantiated and don't appear in
+        # the list of models for an app. We do the final setup for them a
+        # little differently from normal models.
+        attr_meta.abstract = False
+        new_class.Meta = attr_meta
+        return new_class
+
+    new_class._prepare()
+    register_models(new_class._meta.app_label, new_class)
+
+    # Because of the way imports happen (recursively), we may or may not be
+    # the first time this model tries to register with the framework. There
+    # should only be one class for each model, so we always return the
+    # registered version.
+    return get_model(new_class._meta.app_label, name,
+                     seed_cache=False, only_installed=False)
+</code></pre>
+<code>django.model.base.ModelBase.__new__</code>
+</div>
+</section>
+<section>
+    <h2>Clarity when Debugging</h2>
+    <img class="fragment roll-in" src="simple.svg"></img>
+<!--     <ul>
+        <li><code>"class ..."</code>
+            <ul>
+                <li>→ <code>.__metaclass__</code>
+                    <p>or</p>
+                    <code>type(.__class__)</code>
+                    <ul>
+                        <li>→ <code>.__call__()</code>
+                            <ul>
+                                <li>→ <code>your_type.__new__</code>
+                                    <li>→ create new type <code>super(type).__new__</code><p>or</p> <code>type(name, bases, namespace)<br><small>3-arg version only!</small></code> <p>or</p> <small>return anything (bind <code>class</code> to non-class)</small>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul> -->
+</section>
+<section class="errprt">
+    <h2>Great Error Reporting</h2>
+<pre class="fragment roll-in">TypeError: Error when calling the metaclass bases
+    duplicate base class object</pre>
+<pre class="fragment roll-in">TypeError: Error when calling the metaclass bases
+    Cannot create a consistent method resolution order (MRO)
+    for bases type, object</pre>
+<pre class="fragment roll-in">TypeError: Error when calling the metaclass bases
+    multiple bases have instance lay-out conflict</pre>
+<pre class="fragment roll-in">TypeError: Error when calling the metaclass bases
+    __metaclass__() takes exactly 4 arguments (3 given)</pre>
+<pre class="fragment roll-in"><strong>TypeError: Error when calling the metaclass bases
+    metaclass conflict: the metaclass of a derived class must be a
+    (non-strict) subclass of the metaclasses of all its bases</strong></pre>
+</pre>
+</section>
+</section> <!-- end metaclass advantages -->
+
+<section>
+    <section>
+        <h2>What to do instead?</h2>
+    </section>
+    <section>
+        <h2>Call a function.</h2>
+    </section>
+    <section>
+        <h2>If I want to declare a model…</h2>
+    </section>
+    <section>
+        <h2>Call a function that declares a model.</h2>
+        <pre><code class="language-python"
+>Poll = Model(dict(
+    question=CharField(max_length=200),
+    pub_date=DateTimeField("date published"),
+))
+Choice = Model(dict(
+    poll=ForeignKey(Poll),
+    choice_text=CharField(max_length=200),
+    votes=IntegerField(default=0),
+))</code></pre>
+    </section>
+</section>
+<section>
+    <section>
+        <h2>Improvements</h2>
+    </section>
+    <section>
+        <h2>Now it's possible to document</h2>
+        <h2><code style="text-transform: None">Model</code></h2>
+    </section>
+    <section>
+        <h3>Previously, it was</h3>
+        <h1 class="fragment">LITERALLY IMPOSSIBLE</h1>
+        <h3 class="fragment"><code style="text-transform: none">django.db.models.base.Model</code></h3>
+        <h3 class="fragment"><em>DOES NOT HAVE A DOCSTRING</em></h3>
+        <h4 class="fragment">Seriously I could not make this up</h4>
+    </section>
+    <section>
+        <h2>If it did …</h2>
+        <pre><code class="language-python"
+>class Model(with_metaclass(ModelBase)):
+    """
+    Sit back and I'll tell you a story of an
+    application that may yet one day exist,
+    that you might write, to use this class...
+
+    See, first you have to subclass it. And
+    then you have to set some attributes ...
+    """</code></pre>
+    </section>
+    <section>
+        <h3>But if it is a function, instead…</h3>
+<pre><span class="function"><span class="keyword">def</span> <span class="title">Model</span><span class="params">(<span class="fragment highlight-white" data-fragment-index="1">attributes</span>)</span>:</span>
+    <span class="string">"""
+    Create a new database model.
+
+    :param <span class="fragment highlight-white" data-fragment-index="2">attributes</span>: A mapping of the names
+        of attributes to fields which store
+        those attributes.
+    :type <span class="fragment highlight-white" data-fragment-index="2">attributes</span>: :py:class:`dict` which
+        maps :py:class:`str` to
+        :py:class:`Field`
+
+    :returns: A model.
+    :rtype: type
+    """</span>
+</pre>
+<h3 class="fragment" data-fragment-index="1">…we can pass a parameter to it…</h3>
+<h3 class="fragment" data-fragment-index="2">…and document that parameter normally.</h3>
+    </section>
+</section>
+<section>
+    <section>
+        <h1><span class="fragment" data-fragment-index="1">“</span>Problems<span class="fragment" data-fragment-index="1">”</span></h1>
+    </section>
+    <section>
+        <h2>Problem #1</h2>
+        "Poll" and "Choice" now no longer know their own names.
+    </section>
+    <section>
+        <h2>Problem #2</h2>
+        What if I want to put methods on it?
+    </section>
+
+</section>
+
+</div>
+</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: 'sockjs-client/sockjs.js', async: true },
+                    { src: 'plugin/local-remote/local-remote.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
