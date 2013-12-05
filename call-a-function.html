@@ -43,7 +43,7 @@
                     <h3>Or</h3>
 					<h2>Put Down the Metaclass and Step Back</h2>
 					<p>
-						<a href="http://glyph.im">Glyph</a> / <a href="http://twitter.com/glyph">@glyph</a>
+						<a href="http://glyph.im">http://glyph.im/</a> / <a href="http://glyph.twistedmatrix.com/">http://glyph.twistedmatrix.com/</a> / <a href="http://twitter.com/glyph">@glyph</a>
 					</p>
 				</section>
                 <section id="me">
@@ -59,6 +59,21 @@
                 </section>
 <section id="twisted">
     <img src="gruehead.png" style="border: 0; background: none;" />
+</section>
+<section>
+    <h1><span class="fragment">☁</span>︎<span class="fragment">→</span> <code class="fragment">.()</code></h1>
+</section>
+<section>
+    <h1><span class="fragment">☁</span>︎<span class="fragment">→</span><span class="fragment">???</span></h1>
+</section>
+<section>
+    <h1>← This Talk Is Backwards ←</h1>
+</section>
+<section>
+    <h1 style="font-size: 600px;">◢</h1>
+</section>
+<section>
+    <h1 style="font-size: 600px;">◣</h1>
 </section>
                 <section id="disclaimers-disclosure">
 <h3>Disclaimers &amp; Disclosure</h3>
@@ -87,6 +102,11 @@
                     <aside class="notes">
                         Of course, the question is, what exactly would you do <em>instead</em> of calling a function with an argument?  Let's take a look at an example.
                     </aside>
+                </section>
+                <section>
+                    <h2 class="fragment">Metaclasses</h2>
+                    <h2 class="fragment">Inheritance</h2>
+                    <h2 class="fragment">Shared Global State</h2>
                 </section>
                 <section id="class-poll-model">
 <h2>Metaclass Case Study:</h2>
@@ -370,7 +390,7 @@ setattr(subcls, "__special_cached__", cache)
 </section> <!-- end metaclass advantages -->
 
 <section>
-    <section id="what-to-do-instead">
+    <section id="what-to-do-instead-model">
         <h2>What to do instead?</h2>
     </section>
     <section id="call-a-function">
@@ -380,7 +400,7 @@ setattr(subcls, "__special_cached__", cache)
         <h2>If I want to declare a model…</h2>
     </section>
     <section id="call-a-function-that-declares-a-model">
-        <h2>Call a function that declares a model.</h2>
+        <h2>Call a function…<br>…that declares a model.</h2>
         <pre><code class="language-python"
 >Poll = Model(dict(
     question=CharField(max_length=200),
@@ -476,7 +496,8 @@ Choice = Model(dict(
         </aside>
     </section>
     <section>
-        <h3>Your IDE Is People!!!</h3>
+        <h3>Your IDE</h3>
+        <h1>Is People!!!</h1>
     </section>
 </section>
 <section>
@@ -602,7 +623,7 @@ schema = Schema(
 </section>
 <section>
     <section id="global-state">
-        <h2>Shared Mutable State Case Study:</h2>
+        <h2>Shared Mutable State<br>Case Study:</h2>
         <h3>“Configuration”</h3>
     </section>
     <section>
@@ -620,8 +641,8 @@ schema = Schema(
         <h2>Shared Mutable State<br>Advantages</h2>
     </section>
     <section>
-        <h2>Comprehensible Failure Modes</h2>
-<pre style="font-size: 0.8em;">
+        <h2>Comprehensible<br>Failure Modes</h2>
+<pre class="fragment" style="font-size: 0.8em;">
 Traceback (most recent call last):
   File "app.py", line 18, in &lt;module&gt;
     start()
@@ -645,6 +666,31 @@ class AdminPanel(WebView):
     # keep this here or chargebacks won't work
     bill = config.Billing.Administration
     bill.Enabled = adminSystem.enableBilling</code></pre>
+    </section>
+</section>
+<section>
+    <section id="what-to-do-instead-config">
+        <h2>What to do instead?</h2>
+    </section>
+    <section id="call-a-function-config">
+        <h2>Call a function.</h2>
+    </section>
+    <section id="load-your-config">
+        <h2>If I want to load configuration…</h2>
+        <h2>…call a function<br>that loads configuration.</h2>
+    </section>
+    <section>
+        <pre><code class="language-python"
+>class Application(object):
+
+    def __init__(self, configFile):
+        self.configuration = load(configFile)
+
+    def subsystemA(self):
+        return A(self.configuration["A"])
+
+    def subsystemB(self):
+        return B(self.configuration["B"])</code></pre>
     </section>
 </section>
 <section>
@@ -692,10 +738,46 @@ class AdminPanel(WebView):
 # ...
 myObject.add(OtherWidget())</code></pre>
     </section>
+<section>
+    <h2>Clear Relationships Between<br>Related Concepts</h2>
+    <pre><code class="language-python"
+>class Circle(object):
+    def __init__(self):
+        self.nacho_cheez = True
+        self.tensile_strength = 'high'
+class Wheel(Circle):
+    pass
+class Tortilla(Circle):
+    pass
+ </code></pre>
+</section>
     <section>
         <h2>Simple Rules <br><small>for</small><br> Interacting Hierarchies</h2>
 <blockquote style="text-align: left">take the head of the first list, i.e L[B1][0]; if this head is not in the tail of any of the other lists, then add it to the linearization of C and remove it from the lists in the merge, otherwise look at the head of the next list and take it, if it is a good head. Then repeat the operation until all the class are removed or it is impossible to find good heads. In this case, it is impossible to construct the merge, Python 2.3 will refuse to create the class C and will raise an exception.</blockquote>
     (actual text from <a href="http://www.python.org/download/releases/2.3/mro/">“The Python 2.3 Method Resolution Order”</a>)
+    </section>
+</section>
+<section>
+    <section>
+        <h2>What to do instead?</h2>
+    </section>
+    <section>
+        <h2>Write a class…<br>that calls some methods.</h2>
+    </section>
+    <section>
+        <pre><code
+>class MyBuilder(object):
+    def __init__(self):
+        self.container = Container()
+        def add(x):
+            self.container.add(x)
+            return x
+        self.scroll_list = add(ScrollList(...))
+        self.title = add(Label(...))
+        self.detail = add(Detail(...))
+
+    def add_to(self, container):
+        container.add(self.container)</code></pre>
     </section>
 </section>
 <section>
@@ -710,6 +792,33 @@ myObject.add(OtherWidget())</code></pre>
         <h1>6 ± 2</h1>
         <small style="visibility: hidden;"><a href="https://en.wikipedia.org/wiki/The_Magical_Number_Seven%2C_Plus_or_Minus_Two">https://en.wikipedia.org/wiki/The_Magical_Number_Seven%2C_Plus_or_Minus_Two</a></small>
     </section>
+    <section>
+<div style="white-space: pre; text-align: left"><code class="language-python"><span class="function"><span class="keyword">def</span> <span class="title">something</span><span class="params">(one, two, three, four,
+              five, six, seven, eight,
+              <span class="fragment highlight-code">nine</span>)</span>:</span>
+    <span class="string">"..."</span></code></div>
+    </section>
+<section>
+    <pre><code class="language-python"
+>class Something(MetaSomething):
+    __seventeen__ = "special"</code></pre>
+</section>
+    <section>
+        <pre><code
+>import config
+def something():
+    config.forty_five()</code></pre>
+    </section>
+    <section>
+        <pre><code
+>class Something(FiveThroughFourteen,
+                FifteenThroughThirty):
+    def __init__(self):
+        self.twenty_seven()</code></pre>
+    </section>
+</section>
+<section>
+    <h1>Any Questions?</h1>
 </section>
 </div>
 </div>
