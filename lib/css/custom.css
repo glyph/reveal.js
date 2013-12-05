@@ -5,7 +5,7 @@
     hyphens:none;    
 }
 
-.reveal .slides section .fragment.highlight-white {
+.reveal .slides section .fragment.highlight-code {
     opacity: 1;
 }
 
@@ -14,7 +14,7 @@
     to { color: white; }
 }
 
-.reveal .slides section .fragment.highlight-white.visible {
+.reveal .slides section .fragment.highlight-code.visible {
     color: white;
     -webkit-animation-name: color_change;
     -webkit-animation-duration: 0.5s;
@@ -58,4 +58,28 @@
 
 .reveal code {
     font-family: "Menlo";
+}
+
+.reveal td {
+    padding: 0.5em;
+    padding-left: 1em;
+}
+
+.reveal .yes {
+    color: green;
+}
+
+.reveal .no {
+    color: red;
+}
+
+.reveal .yes, .reveal .no {
+    font-size: 2em;
+}
+
+.reveal .sketch {
+    border: 4px solid cyan;
+    font-size: 42px;
+    margin: 4px;
+    padding: 4px;
 }

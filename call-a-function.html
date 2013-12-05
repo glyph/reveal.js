@@ -38,7 +38,7 @@
 		<div class="reveal">
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
-				<section>
+				<section id="title-slide">
 					<h1>How to Call <br>a Function <br>with Some Arguments</h1>
                     <h3>Or</h3>
 					<h2>Put Down the Metaclass and Step Back</h2>
@@ -46,7 +46,25 @@
 						<a href="http://glyph.im">Glyph</a> / <a href="http://twitter.com/glyph">@glyph</a>
 					</p>
 				</section>
-                <section>
+                <section id="me">
+                    <img src="iconograph.svg" style="
+                        // -webkit-filter: drop-shadow(0px 0px 10px rgba(255,255,255,1.0));
+                        background: none;
+                        border: 0;
+                        height: 600px;
+"></img>
+<aside class="notes">
+    Hi, I'm glyph.  If you see this symbol anywhere on the internet, that's me.
+</aside>
+                </section>
+<section id="twisted">
+    <img src="gruehead.png" style="border: 0; background: none;" />
+</section>
+                <section id="disclaimers-disclosure">
+<h3>Disclaimers &amp; Disclosure</h3>
+<img style="width: 100%;" src="guy-who-sucks.png"></img>
+                </section>
+                <section id="f-call">
 <pre class="trivial"><code
 >def f():
     g()</code></pre>
@@ -55,7 +73,7 @@
     The real trick is, I'm going to try to convince you that you ought to be doing this …
 </aside>
                 </section>
-                <section>
+                <section id="f-call-with-x">
 <pre class="trivial"><code>def f(x):
     g(x)</code></pre>
 <aside class="notes">
@@ -64,13 +82,15 @@
     You know, asking for a friend.
 </aside>
                 </section>
-                <section>
+                <section id="question">
                     <h1 style="font-size: 15em;">?</h1>
                     <aside class="notes">
                         Of course, the question is, what exactly would you do <em>instead</em> of calling a function with an argument?  Let's take a look at an example.
                     </aside>
                 </section>
-                <section>
+                <section id="class-poll-model">
+<h2>Metaclass Case Study:</h2>
+<h3>Object Relational Mappers</h3>
 <pre style="font-size: 0.7em;"><code class="language-python"
 >from django.db.models import *
 
@@ -84,10 +104,10 @@ class Choice(Model):
     votes = IntegerField(default=0)</code></pre>
                 </section>
                 <section>
-                    <section>
+                    <section id="metaclass-advantages">
                         <h2>Metaclass Advantages</h2>
                     </section>
-                <section>
+                <section id="simplicity-of-implementation">
     <h2>Simplicity of Implementation</h2>
 
 <div class="fragment roll-in"><pre><code class="language-python" style="-webkit-column-count: 3; font-size: 4px"
@@ -288,8 +308,27 @@ class Choice(Model):
 </code></pre>
 <code>django.model.base.ModelBase.__new__</code>
 </div>
+<aside class="notes">
+    Weighing in at a mere 287 lines of code, as you can see, this one method fits neatly onto a single slide.
+</aside>
 </section>
-<section>
+<section id="easy-to-read">
+<h2>Ease of Reading</h2>
+<pre class="fragment roll-in"><code class="language-python"
+>something(parent.special + self.special)</code></pre>
+<pre class="fragment roll-in"><code class="language-python"
+>subcls = type.__new__(cls, name, bases, attrs)
+ancestors = list(subcls.__mro__[1:])
+ancestors.reverse()
+cache = []
+for ancestor in ancestors:
+    cache.extend(
+        ancestor.__dict__.get("__special__", ())
+    )
+setattr(subcls, "__special_cached__", cache)
+</code></pre>
+</section>
+<section id="clarity-when-debugging">
     <h2>Clarity when Debugging</h2>
     <img class="fragment roll-in" src="simple.svg"></img>
 <!--     <ul>
@@ -325,22 +364,22 @@ class Choice(Model):
     __metaclass__() takes exactly 4 arguments (3 given)</pre>
 <pre class="fragment roll-in"><strong>TypeError: Error when calling the metaclass bases
     metaclass conflict: the metaclass of a derived class must be a
-    (non-strict) subclass of the metaclasses of all its bases</strong></pre>
+    (<em class="fragment highlight-red">non-strict</em>) subclass of the metaclasses of <em class="fragment highlight-red">all its bases</em></strong></pre>
 </pre>
 </section>
 </section> <!-- end metaclass advantages -->
 
 <section>
-    <section>
+    <section id="what-to-do-instead">
         <h2>What to do instead?</h2>
     </section>
-    <section>
+    <section id="call-a-function">
         <h2>Call a function.</h2>
     </section>
-    <section>
+    <section id="declare-a-model">
         <h2>If I want to declare a model…</h2>
     </section>
-    <section>
+    <section id="call-a-function-that-declares-a-model">
         <h2>Call a function that declares a model.</h2>
         <pre><code class="language-python"
 >Poll = Model(dict(
@@ -355,23 +394,23 @@ Choice = Model(dict(
     </section>
 </section>
 <section>
-    <section>
+    <section id="model-improvements">
         <h2>Improvements</h2>
     </section>
-    <section>
+    <section id="possible-to-document-now">
         <h2>Now it's possible to document</h2>
         <h2><code style="text-transform: None">Model</code></h2>
     </section>
-    <section>
+    <section id="literally-impossible">
         <h3>Previously, it was</h3>
         <h1 class="fragment">LITERALLY IMPOSSIBLE</h1>
         <h3 class="fragment"><code style="text-transform: none">django.db.models.base.Model</code></h3>
         <h3 class="fragment"><em>DOES NOT HAVE A DOCSTRING</em></h3>
         <h4 class="fragment">Seriously I could not make this up</h4>
     </section>
-    <section>
+    <section id="if-it-did">
         <h2>If it did …</h2>
-        <pre><code class="language-python"
+        <pre class="fragment"><code class="language-python"
 >class Model(with_metaclass(ModelBase)):
     """
     Sit back and I'll tell you a story of an
@@ -382,16 +421,16 @@ Choice = Model(dict(
     then you have to set some attributes ...
     """</code></pre>
     </section>
-    <section>
+    <section id="model-function-instead">
         <h3>But if it is a function, instead…</h3>
-<pre><span class="function"><span class="keyword">def</span> <span class="title">Model</span><span class="params">(<span class="fragment highlight-white" data-fragment-index="1">attributes</span>)</span>:</span>
+<pre><span class="function"><span class="keyword">def</span> <span class="title">Model</span><span class="params">(<span class="fragment highlight-code" data-fragment-index="1">attributes</span>)</span>:</span>
     <span class="string">"""
     Create a new database model.
 
-    :param <span class="fragment highlight-white" data-fragment-index="2">attributes</span>: A mapping of the names
+    :param <span class="fragment highlight-code" data-fragment-index="2">attributes</span>: A mapping of the names
         of attributes to fields which store
         those attributes.
-    :type <span class="fragment highlight-white" data-fragment-index="2">attributes</span>: :py:class:`dict` which
+    :type <span class="fragment highlight-code" data-fragment-index="2">attributes</span>: :py:class:`dict` which
         maps :py:class:`str` to
         :py:class:`Field`
 
@@ -399,25 +438,279 @@ Choice = Model(dict(
     :rtype: type
     """</span>
 </pre>
-<h3 class="fragment" data-fragment-index="1">…we can pass a parameter to it…</h3>
-<h3 class="fragment" data-fragment-index="2">…and document that parameter normally.</h3>
+<h3 class="fragment" data-fragment-index="1">…we can pass an argument to it…</h3>
+<h3 class="fragment" data-fragment-index="2">…and document that argument normally.</h3>
+    </section>
+    <section id="error-reporting">
+        <h3>Error Reporting</h3>
+        <h1 class="fragment"><code>raise</code></h1>
+        <aside class="notes">
+            Seeing an exception come out of declaring a subclass is surprising.
+            We don't have good language to talk about it.
+        </aside>
+    </section>
+    <section id='ide-support'>
+        <h3>"IDE" Support<span class="fragment"
+            data-fragment-index="9">*</span></h3>
+        <table>
+            <tr>
+                <td data-fragment-index="2" class="fragment yes">✓</td>
+                <td data-fragment-index="1" class="fragment"><code>class Foo(object):</code></td>
+            </tr>
+            <tr>
+                <td data-fragment-index="4" class="fragment yes">✓</td>
+                <td data-fragment-index="3" class="fragment"><code>def __init__(self, x):<br>&nbsp;&nbsp;self.x = x</code></td>
+            </tr>
+            <tr>
+                <td data-fragment-index="6" class="fragment yes">✓</td>
+                <td data-fragment-index="5" class="fragment"><code>def bar(self, a, b, c):<br>&nbsp;&nbsp;return self.boz(a, c) + b</code></td>
+            </tr>
+            <tr>
+                <td data-fragment-index="8" class="fragment no">✘</td>
+                <td data-fragment-index="7" class="fragment"><code>class Something(Magical):<br>&nbsp;&nbsp;__magical_magic__ = ???</code></td>
+            </tr>
+        </table>
+        
+        <aside class="notes">
+            There are plenty of Python IDEs out there.  Some are standalone, like PyCharm or Wing, some are integrated with other editors, like Rope or CodeIntel.  One thing al of these tools have in common is that they parse only a simple subset of Python; after all, everything is very flexible at run time and it's hard to know where to stop.
+        </aside>
+    </section>
+    <section>
+        <h3>Your IDE Is People!!!</h3>
+    </section>
+</section>
+<section>
+    <section id="model-function-problems">
+        <h1><span class="fragment" data-fragment-index="1">“</span>Problems<span class="fragment" data-fragment-index="1">”</span></h1>
+    </section>
+    <section id="problem-1">
+        <h2>Problem #1</h2>
+        <h3>"Poll" and "Choice" now no longer know their own names.</h3>
+    </section>
+    <section id="solution-1">
+        <h2>Solution #1</h2>
+        <h3 class="fragment">If your model function needs a name…</h3>
+        <h3 class="fragment">… pass the name as an argument.</h3>
+    </section>
+    <section id="solution-1-code">
+        <h2>Solution #1</h2>
+        <pre><code class="language-python"
+>Poll = Model(
+    "Poll",
+    dict(
+        question=CharField(max_length=200),
+        pub_date=DateTimeField("date published"),
+    ))
+Choice = Model(
+    "Choice",
+    dict(
+        poll=ForeignKey(Poll),
+        choice_text=CharField(max_length=200),
+        votes=IntegerField(default=0),
+    ))</code></pre>
+    </section>
+    <section id="problem-1a-too-much-typing-crying">
+        <h2>Problem #1a</h2>
+        <h3>“But now I have to type<br>Poll and Choice<br>twiiiiiiiiiiice”</h3>
+        <h1 class="fragment" style="font-size: 200px;">😢</h1>
+    </section>
+    <section id="solution-1a-deal-with-it">
+        <h2>Solution #1a</h2>
+        <h1 class="fragment" data-fragment-index="1" style="font-size: 200px;">😎</h1>
+        <h3 class="fragment" data-fragment-index="1" >Deal with it.</h3>
+        <aside class="notes">
+            In many cases, a little bit of duplication in your code is no big problem.  Ask yourself the question: is this redundancy going to make it easier to <em>read</em> later, or harder?  Sometimes it's best just to be a little repetitive to be clearer.
+        </aside>
+    </section>
+    <section>
+        <h2>Solution #1a</h2>
+        <h3>Is it really clearer?</h3>
+        <h4 class="fragment">(Maybe not in this case.)</h4>
+    </section>
+    <section id="solution-1b">
+        <h2>Solution #1b</h2>
+        <h1>Use A Container</h1>
+    </section>
+
+    <section id="solution-1b-code">
+        <h2>Solution #1b</h2>
+<pre><span class="fragment highlight-code" data-fragment-index="1">Schema</span>(dict(<span class="fragment highlight-code" data-fragment-index="2">Poll</span>=Model(...),
+            <span class="fragment highlight-code" data-fragment-index="2">Choice</span>=Model(...)))</pre>
+        <aside class="notes">
+            In actuality what we're building here is a <em>Schema</em>, not a bunch of disconnected Model classes.  If the schema needs to tell each Model object about its name, now it can, and you only have to express the names once.
+        </aside>
+    </section>
+    <section id="problem-2-put-a-method-on-it">
+        <h2>Problem #2</h2>
+        <h3>What if I want to put methods on it?</h3>
+        <img src="PABOI.png" style="padding: 1em;"
+             class="fragment roll-in"></img>
+    </section>
+    <section id="solution-2">
+        <h2>Solution #2</h2>
+        <h3 class="fragment">If your model function needs behavior…</h3>
+        <h3 class="fragment">… pass the behavior (class)<br>as an argument.</h3>
+    </section>
+    <section id="solution-2-code">
+        <h2>Solution #2</h2>
+        <pre><code
+>class PollBehavior(object):
+    """
+    Some behavior for a L{schema.Poll}.
+    """
+    def vote(self):
+        "..."
+
+schema = Schema(
+    Poll=Model(..., behavior=PollBehavior)
+)</code></pre>
+    </section>
+    <section id="problem-3-attributes">
+        <h2>Problem #3</h2>
+        <h3>"<code>PollBehavior</code>" doesn't have<br>any attributes: where's the data?</h3>
+    </section>
+    <section id="solution-3-attributes">
+        <h2>Solution #3</h2>
+        <h3 class="fragment">If your a class needs attributes…</h3>
+        <h3 class="fragment">… pass the attributes as arguments …</h3>
+        <h3 class="fragment">to its constructor.</h3>
+        <h4 class="fragment">(<code>__init__</code> is a function too.)</h4>
+    </section>
+    <section id="solution-3-code">
+        <h2>Solution #3</h2>
+<pre><code class="language-python"
+>class Poll(object):
+    def __init__(self, database,
+                       question,
+                       pub_date):
+        self.database = database
+        self.question = question
+        self.pub_date = pub_date
+</code></pre>
+    </section>
+    <section id="problem-3a">
+        <h2>Problem #3a</h2>
+        <h3>“Now I have to type every column name<br><em>foooooooour tiiiiiiiiiimes</em>”</h3>
+        <h1 style="font-size: 300px;">😭</h1>
+    </section>
+    <section id="solution-3a">
+        <h2>Solution #3a</h2>
+        <h1 class="fragment" data-fragment-index="1" style="font-size: 350px;">😎</h1>
+        <h3 class="fragment" data-fragment-index="1" >DEAL WITH IT.</h3>
+    </section>
+
+</section>
+<section>
+    <section id="global-state">
+        <h2>Shared Mutable State Case Study:</h2>
+        <h3>“Configuration”</h3>
+    </section>
+    <section>
+        <h2>What is configuration?</h2>
+    </section>
+    <section>
+        <h2>Stuff<span class="fragment">…</span></h2>
+        <h3 class="fragment">… that changes behavior?</h3>
+        <h3 class="fragment">(In other words: part of your program)</h3>
+    </section>
+    <section>
+        <pre class="trivial"><code>import config</code></pre>
+    </section>
+    <section>
+        <h2>Shared Mutable State<br>Advantages</h2>
+    </section>
+    <section>
+        <h2>Comprehensible Failure Modes</h2>
+<pre style="font-size: 0.8em;">
+Traceback (most recent call last):
+  File "app.py", line 18, in &lt;module&gt;
+    start()
+  File "app.py", line 3, in start
+    go()
+  File "app.py", line 6, in go
+    run()
+  File "app.py", line 16, in run
+    required = bool(config.misc.enable_bug_workarounds)
+AttributeError: 'SubConfig' object has no attribute
+'enable_bug_workarounds'
+</pre>
+    </section>
+    <section>
+        <h2>Ease of Maintenance</h2>
+<pre class="fragment roll-in"><code class="language-python"
+>import config
+
+class AdminPanel(WebView):
+  def __init__(self, adminSystem):
+    # keep this here or chargebacks won't work
+    bill = config.Billing.Administration
+    bill.Enabled = adminSystem.enableBilling</code></pre>
     </section>
 </section>
 <section>
     <section>
-        <h1><span class="fragment" data-fragment-index="1">“</span>Problems<span class="fragment" data-fragment-index="1">”</span></h1>
+        <h2>Multiple Inheritance<br>Case Study</h2>
+        <h3>“Widgets”</h3>
     </section>
     <section>
-        <h2>Problem #1</h2>
-        "Poll" and "Choice" now no longer know their own names.
+        <h2>Custom Widget<br>with Subwidgets</h2>
+        <div class="sketch" style="height: 400px; width: 100%; position: relative">
+            <div class="sketch" style="float: left; height: 100%;
+            width: 20%">
+                Scrolling List
+            </div>
+            <div class="sketch" style="float: left; height: 9%; width: 70%">
+                Title
+            </div>
+            <div class="sketch" style="float: left; height: 89%; width: 70%">
+                Detail Area
+            </div>
+        </div>
     </section>
     <section>
-        <h2>Problem #2</h2>
-        What if I want to put methods on it?
+        <h2>Custom Widget<br>with Subwidgets</h2>
+        <pre><code class="language-python"
+>class MyWidget(Widget, Container):
+    def __init__(self):
+        super(MyWidget, self).__init__()
+        super(Container, self).__init__()
+        self.add(MyScrollList())
+        self.add(MyTitle())
+        self.add(MyDetail())</code></pre>
     </section>
-
+    <section>
+        <h2>Multiple Inheritance<br>Advantages</h2>
+    </section>
+    <section>
+        <h2>Transparent Structure<br>of Complex Behavior</h2>
+<pre><code class="language-python"
+>class MyObject(Widget, WidgetContainer,
+               ContainerHelperMixin, DisplayableWidgetMixin,
+               CanvasHelper, NestedContainerMixin):
+    def widget_add(self, widget, container):
+        self.do_add(widget, sender=self)
+# ...
+myObject.add(OtherWidget())</code></pre>
+    </section>
+    <section>
+        <h2>Simple Rules <br><small>for</small><br> Interacting Hierarchies</h2>
+<blockquote style="text-align: left">take the head of the first list, i.e L[B1][0]; if this head is not in the tail of any of the other lists, then add it to the linearization of C and remove it from the lists in the merge, otherwise look at the head of the next list and take it, if it is a good head. Then repeat the operation until all the class are removed or it is impossible to find good heads. In this case, it is impossible to construct the merge, Python 2.3 will refuse to create the class C and will raise an exception.</blockquote>
+    (actual text from <a href="http://www.python.org/download/releases/2.3/mro/">“The Python 2.3 Method Resolution Order”</a>)
+    </section>
 </section>
-
+<section>
+    <section>
+        <h1>The Point</h1>
+    </section>
+    <section>
+        <h1>7 ± 2</h1>
+        <small><a href="https://en.wikipedia.org/wiki/The_Magical_Number_Seven%2C_Plus_or_Minus_Two">https://en.wikipedia.org/wiki/The_Magical_Number_Seven%2C_Plus_or_Minus_Two</a></small>
+    </section>
+        <section>
+        <h1>6 ± 2</h1>
+        <small style="visibility: hidden;"><a href="https://en.wikipedia.org/wiki/The_Magical_Number_Seven%2C_Plus_or_Minus_Two">https://en.wikipedia.org/wiki/The_Magical_Number_Seven%2C_Plus_or_Minus_Two</a></small>
+    </section>
+</section>
 </div>
 </div>
 
