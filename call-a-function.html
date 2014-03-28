@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>How To Call A Function With Some Arguments</title>
+
+		<meta name="description" content="A talk about how not to be too clever.">
+		<meta name="author" content="Glyph">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+        <link rel="stylesheet" href="lib/css/custom.css">
+		<link rel="stylesheet" href="css/theme/night.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<!-- <link rel="stylesheet" href="lib/css/zenburn.css"> -->
+
+        <link rel="stylesheet" href="lib/css/tomorrow-night-bright.css"></link>
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section id="title-slide">
+					<h1>How to Call <br>a Function <br>with Some Arguments</h1>
+                    <h3>Or</h3>
+					<h2>Put Down the Metaclass and Step Back</h2>
+					<p>
+						<a href="http://glyph.im">http://glyph.im/</a> / <a href="http://glyph.twistedmatrix.com/">http://glyph.twistedmatrix.com/</a> / <a href="http://twitter.com/glyph">@glyph</a>
+					</p>
+				</section>
+                <section id="me">
+                    <img src="iconograph.svg" style="
+                        // -webkit-filter: drop-shadow(0px 0px 10px rgba(255,255,255,1.0));
+                        background: none;
+                        border: 0;
+                        height: 600px;
+"></img>
+<aside class="notes">
+    Hi, I'm glyph.  If you see this symbol anywhere on the internet, that's me.
+</aside>
+                </section>
+<section id="twisted">
+    <img src="gruehead.png" style="border: 0; background: none;" />
+</section>
+<section>
+    <h1><span class="fragment">☁</span>︎<span class="fragment">→</span> <code class="fragment">.()</code></h1>
+</section>
+<section>
+    <h1><span class="fragment">☁</span>︎<span class="fragment">→</span><span class="fragment">???</span></h1>
+</section>
+<section>
+    <h1>← This Talk Is Backwards ←</h1>
+</section>
+<section>
+    <h1 style="font-size: 600px;">◢</h1>
+</section>
+<section>
+    <h1 style="font-size: 600px;">◣</h1>
+</section>
+                <section id="disclaimers-disclosure">
+<h3>Disclaimers &amp; Disclosure</h3>
+<img style="width: 100%;" src="guy-who-sucks.png"></img>
+                </section>
+                <section id="f-call">
+<pre class="trivial"><code
+>def f():
+    g()</code></pre>
+<aside class="notes">
+    This entire presentation is basically about how to do this.
+    The real trick is, I'm going to try to convince you that you ought to be doing this …
+</aside>
+                </section>
+                <section id="f-call-with-x">
+<pre class="trivial"><code>def f(x):
+    g(x)</code></pre>
+<aside class="notes">
+    … instead.  Of course, calling a function with an argument is the most basic thing you could possibly do in Python, and I'm sure that I would never need to convince you that that's how you should structure your program.
+    But maybe there's somebody in the audience who isn't quite so advanced, so we should all humor them.
+    You know, asking for a friend.
+</aside>
+                </section>
+                <section id="question">
+                    <h1 style="font-size: 15em;">?</h1>
+                    <aside class="notes">
+                        Of course, the question is, what exactly would you do <em>instead</em> of calling a function with an argument?  Let's take a look at an example.
+                    </aside>
+                </section>
+                <section>
+                    <h2 class="fragment">Metaclasses</h2>
+                    <h2 class="fragment">Inheritance</h2>
+                    <h2 class="fragment">Shared Global State</h2>
+                </section>
+                <section id="class-poll-model">
+<h2>Metaclass Case Study:</h2>
+<h3>Object Relational Mappers</h3>
+<pre style="font-size: 0.7em;"><code class="language-python"
+>from django.db.models import *
+
+class Poll(Model):
+    question = CharField(max_length=200)
+    pub_date = DateTimeField('date published')
+
+class Choice(Model):
+    poll = ForeignKey(Poll)
+    choice_text = CharField(max_length=200)
+    votes = IntegerField(default=0)</code></pre>
+                </section>
+                <section>
+                    <section id="metaclass-advantages">
+                        <h2>Metaclass Advantages</h2>
+                    </section>
+                <section id="simplicity-of-implementation">
+    <h2>Simplicity of Implementation</h2>
+
+<div class="fragment roll-in"><pre><code class="language-python" style="-webkit-column-count: 3; font-size: 4px"
+>def __new__(cls, name, bases, attrs):
+    super_new = super(ModelBase, cls).__new__
+
+    # six.with_metaclass() inserts an extra class called 'NewBase' in the
+    # inheritance tree: Model -> NewBase -> object. But the initialization
+    # should be executed only once for a given model class.
+
+    # attrs will never be empty for classes declared in the standard way
+    # (ie. with the `class` keyword). This is quite robust.
+    if name == 'NewBase' and attrs == {}:
+        return super_new(cls, name, bases, attrs)
+
+    # Also ensure initialization is only performed for subclasses of Model
+    # (excluding Model class itself).
+    parents = [b for b in bases if isinstance(b, ModelBase) and
+            not (b.__name__ == 'NewBase' and b.__mro__ == (b, object))]
+    if not parents:
+        return super_new(cls, name, bases, attrs)
+
+    # Create the class.
+    module = attrs.pop('__module__')
+    new_class = super_new(cls, name, bases, {'__module__': module})
+    attr_meta = attrs.pop('Meta', None)
+    abstract = getattr(attr_meta, 'abstract', False)
+    if not attr_meta:
+        meta = getattr(new_class, 'Meta', None)
+    else:
+        meta = attr_meta
+    base_meta = getattr(new_class, '_meta', None)
+
+    if getattr(meta, 'app_label', None) is None:
+        # Figure out the app_label by looking one level up.
+        # For 'django.contrib.sites.models', this would be 'sites'.
+        model_module = sys.modules[new_class.__module__]
+        kwargs = {"app_label": model_module.__name__.split('.')[-2]}
+    else:
+        kwargs = {}
+
+    new_class.add_to_class('_meta', Options(meta, **kwargs))
+    if not abstract:
+        new_class.add_to_class('DoesNotExist', subclass_exception(str('DoesNotExist'),
+                tuple(x.DoesNotExist
+                      for x in parents if hasattr(x, '_meta') and not x._meta.abstract)
+                or (ObjectDoesNotExist,),
+                module, attached_to=new_class))
+        new_class.add_to_class('MultipleObjectsReturned', subclass_exception(str('MultipleObjectsReturned'),
+                tuple(x.MultipleObjectsReturned
+                      for x in parents if hasattr(x, '_meta') and not x._meta.abstract)
+                or (MultipleObjectsReturned,),
+                module, attached_to=new_class))
+        if base_meta and not base_meta.abstract:
+            # Non-abstract child classes inherit some attributes from their
+            # non-abstract parent (unless an ABC comes before it in the
+            # method resolution order).
+            if not hasattr(meta, 'ordering'):
+                new_class._meta.ordering = base_meta.ordering
+            if not hasattr(meta, 'get_latest_by'):
+                new_class._meta.get_latest_by = base_meta.get_latest_by
+
+    is_proxy = new_class._meta.proxy
+
+    # If the model is a proxy, ensure that the base class
+    # hasn't been swapped out.
+    if is_proxy and base_meta and base_meta.swapped:
+        raise TypeError("%s cannot proxy the swapped model '%s'." % (name, base_meta.swapped))
+
+    if getattr(new_class, '_default_manager', None):
+        if not is_proxy:
+            # Multi-table inheritance doesn't inherit default manager from
+            # parents.
+            new_class._default_manager = None
+            new_class._base_manager = None
+        else:
+            # Proxy classes do inherit parent's default manager, if none is
+            # set explicitly.
+            new_class._default_manager = new_class._default_manager._copy_to_model(new_class)
+            new_class._base_manager = new_class._base_manager._copy_to_model(new_class)
+
+    # Bail out early if we have already created this class.
+    m = get_model(new_class._meta.app_label, name,
+                  seed_cache=False, only_installed=False)
+    if m is not None:
+        return m
+
+    # Add all attributes to the class.
+    for obj_name, obj in attrs.items():
+        new_class.add_to_class(obj_name, obj)
+
+    # All the fields of any type declared on this model
+    new_fields = new_class._meta.local_fields + \
+                 new_class._meta.local_many_to_many + \
+                 new_class._meta.virtual_fields
+    field_names = set([f.name for f in new_fields])
+
+    # Basic setup for proxy models.
+    if is_proxy:
+        base = None
+        for parent in [cls for cls in parents if hasattr(cls, '_meta')]:
+            if parent._meta.abstract:
+                if parent._meta.fields:
+                    raise TypeError("Abstract base class containing model fields not permitted for proxy model '%s'." % name)
+                else:
+                    continue
+            if base is not None:
+                raise TypeError("Proxy model '%s' has more than one non-abstract model base class." % name)
+            else:
+                base = parent
+        if base is None:
+            raise TypeError("Proxy model '%s' has no non-abstract model base class." % name)
+        if (new_class._meta.local_fields or
+                new_class._meta.local_many_to_many):
+            raise FieldError("Proxy model '%s' contains model fields." % name)
+        new_class._meta.setup_proxy(base)
+        new_class._meta.concrete_model = base._meta.concrete_model
+    else:
+        new_class._meta.concrete_model = new_class
+
+    # Do the appropriate setup for any model parents.
+    o2o_map = dict([(f.rel.to, f) for f in new_class._meta.local_fields
+            if isinstance(f, OneToOneField)])
+
+    for base in parents:
+        original_base = base
+        if not hasattr(base, '_meta'):
+            # Things without _meta aren't functional models, so they're
+            # uninteresting parents.
+            continue
+
+        parent_fields = base._meta.local_fields + base._meta.local_many_to_many
+        # Check for clashes between locally declared fields and those
+        # on the base classes (we cannot handle shadowed fields at the
+        # moment).
+        for field in parent_fields:
+            if field.name in field_names:
+                raise FieldError('Local field %r in class %r clashes '
+                                 'with field of similar name from '
+                                 'base class %r' %
+                                    (field.name, name, base.__name__))
+        if not base._meta.abstract:
+            # Concrete classes...
+            base = base._meta.concrete_model
+            if base in o2o_map:
+                field = o2o_map[base]
+            elif not is_proxy:
+                attr_name = '%s_ptr' % base._meta.model_name
+                field = OneToOneField(base, name=attr_name,
+                        auto_created=True, parent_link=True)
+                new_class.add_to_class(attr_name, field)
+            else:
+                field = None
+            new_class._meta.parents[base] = field
+        else:
+            # .. and abstract ones.
+            for field in parent_fields:
+                new_class.add_to_class(field.name, copy.deepcopy(field))
+
+            # Pass any non-abstract parent classes onto child.
+            new_class._meta.parents.update(base._meta.parents)
+
+        # Inherit managers from the abstract base classes.
+        new_class.copy_managers(base._meta.abstract_managers)
+
+        # Proxy models inherit the non-abstract managers from their base,
+        # unless they have redefined any of them.
+        if is_proxy:
+            new_class.copy_managers(original_base._meta.concrete_managers)
+
+        # Inherit virtual fields (like GenericForeignKey) from the parent
+        # class
+        for field in base._meta.virtual_fields:
+            if base._meta.abstract and field.name in field_names:
+                raise FieldError('Local field %r in class %r clashes '\
+                                 'with field of similar name from '\
+                                 'abstract base class %r' % \
+                                    (field.name, name, base.__name__))
+            new_class.add_to_class(field.name, copy.deepcopy(field))
+
+    if abstract:
+        # Abstract base models can't be instantiated and don't appear in
+        # the list of models for an app. We do the final setup for them a
+        # little differently from normal models.
+        attr_meta.abstract = False
+        new_class.Meta = attr_meta
+        return new_class
+
+    new_class._prepare()
+    register_models(new_class._meta.app_label, new_class)
+
+    # Because of the way imports happen (recursively), we may or may not be
+    # the first time this model tries to register with the framework. There
+    # should only be one class for each model, so we always return the
+    # registered version.
+    return get_model(new_class._meta.app_label, name,
+                     seed_cache=False, only_installed=False)
+</code></pre>
+<code>django.model.base.ModelBase.__new__</code>
+</div>
+<aside class="notes">
+    Weighing in at a mere 287 lines of code, as you can see, this one method fits neatly onto a single slide.
+</aside>
+</section>
+<section id="easy-to-read">
+<h2>Ease of Reading</h2>
+<pre class="fragment roll-in"><code class="language-python"
+>something(parent.special + self.special)</code></pre>
+<pre class="fragment roll-in"><code class="language-python"
+>subcls = type.__new__(cls, name, bases, attrs)
+ancestors = list(subcls.__mro__[1:])
+ancestors.reverse()
+cache = []
+for ancestor in ancestors:
+    cache.extend(
+        ancestor.__dict__.get("__special__", ())
+    )
+setattr(subcls, "__special_cached__", cache)
+</code></pre>
+</section>
+<section id="clarity-when-debugging">
+    <h2>Clarity when Debugging</h2>
+    <img class="fragment roll-in" src="simple.svg"></img>
+<!--     <ul>
+        <li><code>"class ..."</code>
+            <ul>
+                <li>→ <code>.__metaclass__</code>
+                    <p>or</p>
+                    <code>type(.__class__)</code>
+                    <ul>
+                        <li>→ <code>.__call__()</code>
+                            <ul>
+                                <li>→ <code>your_type.__new__</code>
+                                    <li>→ create new type <code>super(type).__new__</code><p>or</p> <code>type(name, bases, namespace)<br><small>3-arg version only!</small></code> <p>or</p> <small>return anything (bind <code>class</code> to non-class)</small>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul> -->
+</section>
+<section class="errprt">
+    <h2>Great Error Reporting</h2>
+<pre class="fragment roll-in">TypeError: Error when calling the metaclass bases
+    duplicate base class object</pre>
+<pre class="fragment roll-in">TypeError: Error when calling the metaclass bases
+    Cannot create a consistent method resolution order (MRO)
+    for bases type, object</pre>
+<pre class="fragment roll-in">TypeError: Error when calling the metaclass bases
+    multiple bases have instance lay-out conflict</pre>
+<pre class="fragment roll-in">TypeError: Error when calling the metaclass bases
+    __metaclass__() takes exactly 4 arguments (3 given)</pre>
+<pre class="fragment roll-in"><strong>TypeError: Error when calling the metaclass bases
+    metaclass conflict: the metaclass of a derived class must be a
+    (<em class="fragment highlight-red">non-strict</em>) subclass of the metaclasses of <em class="fragment highlight-red">all its bases</em></strong></pre>
+</pre>
+</section>
+</section> <!-- end metaclass advantages -->
+
+<section>
+    <section id="what-to-do-instead-model">
+        <h2>What to do instead?</h2>
+    </section>
+    <section id="call-a-function">
+        <h2>Call a function.</h2>
+    </section>
+    <section id="declare-a-model">
+        <h2>If I want to declare a model…</h2>
+    </section>
+    <section id="call-a-function-that-declares-a-model">
+        <h2>Call a function…<br>…that declares a model.</h2>
+        <pre><code class="language-python"
+>Poll = Model(dict(
+    question=CharField(max_length=200),
+    pub_date=DateTimeField("date published"),
+))
+Choice = Model(dict(
+    poll=ForeignKey(Poll),
+    choice_text=CharField(max_length=200),
+    votes=IntegerField(default=0),
+))</code></pre>
+    </section>
+</section>
+<section>
+    <section id="model-improvements">
+        <h2>Improvements</h2>
+    </section>
+    <section id="possible-to-document-now">
+        <h2>Now it's possible to document</h2>
+        <h2><code style="text-transform: None">Model</code></h2>
+    </section>
+    <section id="literally-impossible">
+        <h3>Previously, it was</h3>
+        <h1 class="fragment">LITERALLY IMPOSSIBLE</h1>
+        <h3 class="fragment"><code style="text-transform: none">django.db.models.base.Model</code></h3>
+        <h3 class="fragment"><em>DOES NOT HAVE A DOCSTRING</em></h3>
+        <h4 class="fragment">Seriously I could not make this up</h4>
+    </section>
+    <section id="if-it-did">
+        <h2>If it did …</h2>
+        <pre class="fragment"><code class="language-python"
+>class Model(with_metaclass(ModelBase)):
+    """
+    Sit back and I'll tell you a story of an
+    application that may yet one day exist,
+    that you might write, to use this class...
+
+    See, first you have to subclass it. And
+    then you have to set some attributes ...
+    """</code></pre>
+    </section>
+    <section id="model-function-instead">
+        <h3>But if it is a function, instead…</h3>
+<pre><span class="function"><span class="keyword">def</span> <span class="title">Model</span><span class="params">(<span class="fragment highlight-code" data-fragment-index="1">attributes</span>)</span>:</span>
+    <span class="string">"""
+    Create a new database model.
+
+    :param <span class="fragment highlight-code" data-fragment-index="2">attributes</span>: A mapping of the names
+        of attributes to fields which store
+        those attributes.
+    :type <span class="fragment highlight-code" data-fragment-index="2">attributes</span>: :py:class:`dict` which
+        maps :py:class:`str` to
+        :py:class:`Field`
+
+    :returns: A model.
+    :rtype: type
+    """</span>
+</pre>
+<h3 class="fragment" data-fragment-index="1">…we can pass an argument to it…</h3>
+<h3 class="fragment" data-fragment-index="2">…and document that argument normally.</h3>
+    </section>
+    <section id="error-reporting">
+        <h3>Error Reporting</h3>
+        <h1 class="fragment"><code>raise</code></h1>
+        <aside class="notes">
+            Seeing an exception come out of declaring a subclass is surprising.
+            We don't have good language to talk about it.
+        </aside>
+    </section>
+    <section id='ide-support'>
+        <h3>"IDE" Support<span class="fragment"
+            data-fragment-index="9">*</span></h3>
+        <table>
+            <tr>
+                <td data-fragment-index="2" class="fragment yes">✓</td>
+                <td data-fragment-index="1" class="fragment"><code>class Foo(object):</code></td>
+            </tr>
+            <tr>
+                <td data-fragment-index="4" class="fragment yes">✓</td>
+                <td data-fragment-index="3" class="fragment"><code>def __init__(self, x):<br>&nbsp;&nbsp;self.x = x</code></td>
+            </tr>
+            <tr>
+                <td data-fragment-index="6" class="fragment yes">✓</td>
+                <td data-fragment-index="5" class="fragment"><code>def bar(self, a, b, c):<br>&nbsp;&nbsp;return self.boz(a, c) + b</code></td>
+            </tr>
+            <tr>
+                <td data-fragment-index="8" class="fragment no">✘</td>
+                <td data-fragment-index="7" class="fragment"><code>class Something(Magical):<br>&nbsp;&nbsp;__magical_magic__ = ???</code></td>
+            </tr>
+        </table>
+        
+        <aside class="notes">
+            There are plenty of Python IDEs out there.  Some are standalone, like PyCharm or Wing, some are integrated with other editors, like Rope or CodeIntel.  One thing al of these tools have in common is that they parse only a simple subset of Python; after all, everything is very flexible at run time and it's hard to know where to stop.
+        </aside>
+    </section>
+    <section>
+        <h3>Your IDE</h3>
+        <h1>Is People!!!</h1>
+    </section>
+</section>
+<section>
+    <section id="model-function-problems">
+        <h1><span class="fragment" data-fragment-index="1">“</span>Problems<span class="fragment" data-fragment-index="1">”</span></h1>
+    </section>
+    <section id="problem-1">
+        <h2>Problem #1</h2>
+        <h3>"Poll" and "Choice" now no longer know their own names.</h3>
+    </section>
+    <section id="solution-1">
+        <h2>Solution #1</h2>
+        <h3 class="fragment">If your model function needs a name…</h3>
+        <h3 class="fragment">… pass the name as an argument.</h3>
+    </section>
+    <section id="solution-1-code">
+        <h2>Solution #1</h2>
+        <pre><code class="language-python"
+>Poll = Model(
+    "Poll",
+    dict(
+        question=CharField(max_length=200),
+        pub_date=DateTimeField("date published"),
+    ))
+Choice = Model(
+    "Choice",
+    dict(
+        poll=ForeignKey(Poll),
+        choice_text=CharField(max_length=200),
+        votes=IntegerField(default=0),
+    ))</code></pre>
+    </section>
+    <section id="problem-1a-too-much-typing-crying">
+        <h2>Problem #1a</h2>
+        <h3>“But now I have to type<br>Poll and Choice<br>twiiiiiiiiiiice”</h3>
+        <h1 class="fragment" style="font-size: 200px;">😢</h1>
+    </section>
+    <section id="solution-1a-deal-with-it">
+        <h2>Solution #1a</h2>
+        <h1 class="fragment" data-fragment-index="1" style="font-size: 200px;">😎</h1>
+        <h3 class="fragment" data-fragment-index="1" >Deal with it.</h3>
+        <aside class="notes">
+            In many cases, a little bit of duplication in your code is no big problem.  Ask yourself the question: is this redundancy going to make it easier to <em>read</em> later, or harder?  Sometimes it's best just to be a little repetitive to be clearer.
+        </aside>
+    </section>
+    <section>
+        <h2>Solution #1a</h2>
+        <h3>Is it really clearer?</h3>
+        <h4 class="fragment">(Maybe not in this case.)</h4>
+    </section>
+    <section id="solution-1b">
+        <h2>Solution #1b</h2>
+        <h1>Use A Container</h1>
+    </section>
+
+    <section id="solution-1b-code">
+        <h2>Solution #1b</h2>
+<pre><span class="fragment highlight-code" data-fragment-index="1">Schema</span>(dict(<span class="fragment highlight-code" data-fragment-index="2">Poll</span>=Model(...),
+            <span class="fragment highlight-code" data-fragment-index="2">Choice</span>=Model(...)))</pre>
+        <aside class="notes">
+            In actuality what we're building here is a <em>Schema</em>, not a bunch of disconnected Model classes.  If the schema needs to tell each Model object about its name, now it can, and you only have to express the names once.
+        </aside>
+    </section>
+    <section id="problem-2-put-a-method-on-it">
+        <h2>Problem #2</h2>
+        <h3>What if I want to put methods on it?</h3>
+        <img src="PABOI.png" style="padding: 1em;"
+             class="fragment roll-in"></img>
+    </section>
+    <section id="solution-2">
+        <h2>Solution #2</h2>
+        <h3 class="fragment">If your model function needs behavior…</h3>
+        <h3 class="fragment">… pass the behavior (class)<br>as an argument.</h3>
+    </section>
+    <section id="solution-2-code">
+        <h2>Solution #2</h2>
+        <pre><code
+>class PollBehavior(object):
+    """
+    Some behavior for a L{schema.Poll}.
+    """
+    def vote(self):
+        "..."
+
+schema = Schema(
+    Poll=Model(..., behavior=PollBehavior)
+)</code></pre>
+    </section>
+    <section id="problem-3-attributes">
+        <h2>Problem #3</h2>
+        <h3>"<code>PollBehavior</code>" doesn't have<br>any attributes: where's the data?</h3>
+    </section>
+    <section id="solution-3-attributes">
+        <h2>Solution #3</h2>
+        <h3 class="fragment">If your a class needs attributes…</h3>
+        <h3 class="fragment">… pass the attributes as arguments …</h3>
+        <h3 class="fragment">to its constructor.</h3>
+        <h4 class="fragment">(<code>__init__</code> is a function too.)</h4>
+    </section>
+    <section id="solution-3-code">
+        <h2>Solution #3</h2>
+<pre><code class="language-python"
+>class Poll(object):
+    def __init__(self, database,
+                       question,
+                       pub_date):
+        self.database = database
+        self.question = question
+        self.pub_date = pub_date
+</code></pre>
+    </section>
+    <section id="problem-3a">
+        <h2>Problem #3a</h2>
+        <h3>“Now I have to type every column name<br><em>foooooooour tiiiiiiiiiimes</em>”</h3>
+        <h1 style="font-size: 300px;">😭</h1>
+    </section>
+    <section id="solution-3a">
+        <h2>Solution #3a</h2>
+        <h1 class="fragment" data-fragment-index="1" style="font-size: 350px;">😎</h1>
+        <h3 class="fragment" data-fragment-index="1" >DEAL WITH IT.</h3>
+    </section>
+
+</section>
+<section>
+    <section id="global-state">
+        <h2>Shared Mutable State<br>Case Study:</h2>
+        <h3>“Configuration”</h3>
+    </section>
+    <section>
+        <h2>What is configuration?</h2>
+    </section>
+    <section>
+        <h2>Stuff<span class="fragment">…</span></h2>
+        <h3 class="fragment">… that changes behavior?</h3>
+        <h3 class="fragment">(In other words: part of your program)</h3>
+    </section>
+    <section>
+        <pre class="trivial"><code>import config</code></pre>
+    </section>
+    <section>
+        <h2>Shared Mutable State<br>Advantages</h2>
+    </section>
+    <section>
+        <h2>Comprehensible<br>Failure Modes</h2>
+<pre class="fragment" style="font-size: 0.8em;">
+Traceback (most recent call last):
+  File "app.py", line 18, in &lt;module&gt;
+    start()
+  File "app.py", line 3, in start
+    go()
+  File "app.py", line 6, in go
+    run()
+  File "app.py", line 16, in run
+    required = bool(config.misc.enable_bug_workarounds)
+AttributeError: 'SubConfig' object has no attribute
+'enable_bug_workarounds'
+</pre>
+    </section>
+    <section>
+        <h2>Ease of Maintenance</h2>
+<pre class="fragment roll-in"><code class="language-python"
+>import config
+
+class AdminPanel(WebView):
+  def __init__(self, adminSystem):
+    # keep this here or chargebacks won't work
+    bill = config.Billing.Administration
+    bill.Enabled = adminSystem.enableBilling</code></pre>
+    </section>
+</section>
+<section>
+    <section id="what-to-do-instead-config">
+        <h2>What to do instead?</h2>
+    </section>
+    <section id="call-a-function-config">
+        <h2>Call a function.</h2>
+    </section>
+    <section id="load-your-config">
+        <h2>If I want to load configuration…</h2>
+        <h2>…call a function<br>that loads configuration.</h2>
+    </section>
+    <section>
+        <pre><code class="language-python"
+>class Application(object):
+
+    def __init__(self, configFile):
+        self.configuration = load(configFile)
+
+    def subsystemA(self):
+        return A(self.configuration["A"])
+
+    def subsystemB(self):
+        return B(self.configuration["B"])</code></pre>
+    </section>
+</section>
+<section>
+    <section>
+        <h2>Multiple Inheritance<br>Case Study</h2>
+        <h3>“Widgets”</h3>
+    </section>
+    <section>
+        <h2>Custom Widget<br>with Subwidgets</h2>
+        <div class="sketch" style="height: 400px; width: 100%; position: relative">
+            <div class="sketch" style="float: left; height: 100%;
+            width: 20%">
+                Scrolling List
+            </div>
+            <div class="sketch" style="float: left; height: 9%; width: 70%">
+                Title
+            </div>
+            <div class="sketch" style="float: left; height: 89%; width: 70%">
+                Detail Area
+            </div>
+        </div>
+    </section>
+    <section>
+        <h2>Custom Widget<br>with Subwidgets</h2>
+        <pre><code class="language-python"
+>class MyWidget(Widget, Container):
+    def __init__(self):
+        super(MyWidget, self).__init__()
+        super(Container, self).__init__()
+        self.add(MyScrollList())
+        self.add(MyTitle())
+        self.add(MyDetail())</code></pre>
+    </section>
+    <section>
+        <h2>Multiple Inheritance<br>Advantages</h2>
+    </section>
+    <section>
+        <h2>Transparent Structure<br>of Complex Behavior</h2>
+<pre><code class="language-python"
+>class MyObject(Widget, WidgetContainer,
+               ContainerHelperMixin, DisplayableWidgetMixin,
+               CanvasHelper, NestedContainerMixin):
+    def widget_add(self, widget, container):
+        self.do_add(widget, sender=self)
+# ...
+myObject.add(OtherWidget())</code></pre>
+    </section>
+<section>
+    <h2>Clear Relationships Between<br>Related Concepts</h2>
+    <pre><code class="language-python"
+>class Circle(object):
+    def __init__(self):
+        self.nacho_cheez = True
+        self.tensile_strength = 'high'
+class Wheel(Circle):
+    pass
+class Tortilla(Circle):
+    pass
+ </code></pre>
+</section>
+    <section>
+        <h2>Simple Rules <br><small>for</small><br> Interacting Hierarchies</h2>
+<blockquote style="text-align: left">take the head of the first list, i.e L[B1][0]; if this head is not in the tail of any of the other lists, then add it to the linearization of C and remove it from the lists in the merge, otherwise look at the head of the next list and take it, if it is a good head. Then repeat the operation until all the class are removed or it is impossible to find good heads. In this case, it is impossible to construct the merge, Python 2.3 will refuse to create the class C and will raise an exception.</blockquote>
+    (actual text from <a href="http://www.python.org/download/releases/2.3/mro/">“The Python 2.3 Method Resolution Order”</a>)
+    </section>
+</section>
+<section>
+    <section>
+        <h2>What to do instead?</h2>
+    </section>
+    <section>
+        <h2>Write a class…<br>that calls some methods.</h2>
+    </section>
+    <section>
+        <pre><code
+>class MyBuilder(object):
+    def __init__(self):
+        self.container = Container()
+        def add(x):
+            self.container.add(x)
+            return x
+        self.scroll_list = add(ScrollList(...))
+        self.title = add(Label(...))
+        self.detail = add(Detail(...))
+
+    def add_to(self, container):
+        container.add(self.container)</code></pre>
+    </section>
+</section>
+<section>
+    <section>
+        <h1>The Point</h1>
+    </section>
+    <section>
+        <h1>7 ± 2</h1>
+        <small><a href="https://en.wikipedia.org/wiki/The_Magical_Number_Seven%2C_Plus_or_Minus_Two">https://en.wikipedia.org/wiki/The_Magical_Number_Seven%2C_Plus_or_Minus_Two</a></small>
+    </section>
+        <section>
+        <h1>6 ± 2</h1>
+        <small style="visibility: hidden;"><a href="https://en.wikipedia.org/wiki/The_Magical_Number_Seven%2C_Plus_or_Minus_Two">https://en.wikipedia.org/wiki/The_Magical_Number_Seven%2C_Plus_or_Minus_Two</a></small>
+    </section>
+    <section>
+<div style="white-space: pre; text-align: left"><code class="language-python"><span class="function"><span class="keyword">def</span> <span class="title">something</span><span class="params">(one, two, three, four,
+              five, six, seven, eight,
+              <span class="fragment highlight-code">nine</span>)</span>:</span>
+    <span class="string">"..."</span></code></div>
+    </section>
+<section>
+    <pre><code class="language-python"
+>class Something(MetaSomething):
+    __seventeen__ = "special"</code></pre>
+</section>
+    <section>
+        <pre><code
+>import config
+def something():
+    config.forty_five()</code></pre>
+    </section>
+    <section>
+        <pre><code
+>class Something(FiveThroughFourteen,
+                FifteenThroughThirty):
+    def __init__(self):
+        self.twenty_seven()</code></pre>
+    </section>
+</section>
+<section>
+    <h1>Any Questions?</h1>
+</section>
+</div>
+</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: 'sockjs-client/sockjs.js', async: true },
+                    { src: 'plugin/local-remote/local-remote.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
