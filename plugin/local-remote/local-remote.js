@@ -22,12 +22,30 @@
 
     if(!hasTouch && !isNotesAndIframe){
         if(!hasTouch && !isNotesAndIframe){
-            var sock = new SockJS('/plugin/local-remote/server.rpy');
+
+
+            var sock = new SockJS('/plugin/local-remote/client.rpy');
             sock.onopen = function () {
                 console.log("Opened.");
             };
+            Reveal.addEventListener('slidechanged', function (event) {
+                var notes = event.currentSlide.querySelector(".notes");
+                var notesText;
+                if (notes === null) {
+                    console.log("No notes for this slide.");
+                    notesText = "(No notes for this slide.)";
+                } else {
+                    notesText = notes.innerHTML;
+                }
+                var notesCommand = JSON.stringify(
+                    {command: "NOTES",
+                     notes: notesText}
+                );
+                sock.send(notesCommand + "\r\n");
+            });
             sock.onmessage = function (e) {
-                switch (e.data.trimRight()) {
+                var message = JSON.parse(e.data);
+                switch (message.command) {
                     case "LEFT":
                         Reveal.left();
                         break;
