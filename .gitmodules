@@ -1,3 +1,6 @@
 [submodule "sockjs-client"]
 	path = sockjs-client
 	url = https://github.com/sockjs/sockjs-client
+[submodule "plugin/local-remote"]
+	path = plugin/local-remote
+	url = https://github.com/glyph/reveal.js-local-remote
