@@ -55,7 +55,9 @@
                           </section>
 
                           <section>
-                            <video class="stretch" src="pip-is-hard.mp4" />
+                            <video
+                               src="pip-is-hard.mp4"
+                                   controls />
                           </section>
                           
                           <section>
@@ -73,8 +75,10 @@
                           <section>
                             <h3>Hope</h3>
                           </section>
-                          <section>
-                            <video class="stretch" src="pip-bootstrap-is-easy.mp4" />
+                          <section style="width: 100%; height: 100%">
+                            <video class="stretch"
+                                   src="pip-bootstrap-is-easy.mp4"
+                                   controls />
                           </section>
                           <section>
                             <h3>Hope</h3>
@@ -112,9 +116,7 @@
 					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
 					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
 					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
-					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
-                    { src: 'sockjs-client/sockjs.js', async: true },
-                    { src: 'plugin/local-remote/local-remote.js', async: true }
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
 				]
 			});
 
