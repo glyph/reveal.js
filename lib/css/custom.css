@@ -2,7 +2,7 @@
 .reveal h1, h2, h3, h4, h5, h6 {
     -webkit-hyphens:none;
     -moz-hyphens:none;
-    hyphens:none;    
+    hyphens:none;
 }
 
 .reveal .slides section .fragment.highlight-code {
@@ -65,6 +65,13 @@
     padding-left: 1em;
 }
 
+.reveal .panel4 img {
+    width: 350px;
+    padding: 0;
+    /* border: 0; */
+    margin: 0;
+}
+
 .reveal .yes {
     color: green;
 }
@@ -83,3 +90,4 @@
     margin: 4px;
     padding: 4px;
 }
+
