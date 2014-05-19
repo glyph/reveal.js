@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
 
-    <title>Click, Code, Run, Share</title>
+    <title>I Am Tech Talk And So Can You</title>
 
     <meta name="description" content="How To Give A Good Technical Talk:
                                       A Good Technical Talk">
@@ -165,16 +165,17 @@
           </aside>
         </section>
         <section>
-          <h1>You’re Busy</h1>
-          <h1>I’m Busy</h1>
+          <h1 class="fragment">You’re Busy</h1>
+          <h1 class="fragment">I’m Busy</h1>
           <aside class="notes">
-            I know you’re really busy.  I’m busy too.  So we <em>have</em> to
-            be lazy - by which I mean economical about the effort we invest -
-            with my talks.  For pretty much all of us, technical presenting is
-            at best an extracurricular activity, and at worst something we have
-            to do entirely outside of work.  Luckily, creating a technical
-            presentation that is miles ahead of the pack is really not all that
-            hard, as long as you keep a few simple principles in mind.
+            I know you’re really busy. (click) I’m busy too. (click) So
+            we <em>have</em> to be lazy - by which I mean economical about the
+            effort we invest - with my talks.  For pretty much all of us,
+            technical presenting is at best an extracurricular activity, and at
+            worst something we have to do entirely outside of work.  Luckily,
+            creating a technical presentation that is miles ahead of the pack
+            is really not all that hard, as long as you keep a few simple
+            principles in mind.
           </aside>
         </section>
         <section>
@@ -276,7 +277,9 @@
           <img src="sample-diagram.png">
           <aside class="notes">
             You can have diagrams that illustrate important concepts that
-            you're trying to get across.
+            you're trying to get across.  (Although be careful with relying on
+            color too much, because some members of your audience <em>will</em>
+            be color blind.)
           </aside>
         </section>
         <section
@@ -290,10 +293,10 @@ There is a small mailbox here.
 
 <span class="fragment">You're already looking at the very droll slides.</span></pre>
           <aside class="notes">
-            And of course it's a safe bet that most of your audience are nerds,
-            so a little nerd humor never hurts.  Just make sure that you
-            don't <em>need</em> to understand all the jokes and references to
-            follow the content.
+            And of course it's a safe bet that most of your audience are nerds
+            (click), so a little nerd humor never hurts (click).  Just make
+            sure that you don't <em>need</em> to understand all the jokes and
+            references to follow the content. (click)
           </aside>
         </section>
         <section
@@ -415,11 +418,11 @@ There is a small mailbox here.
             move from one portion of it to another.  It's important that your
             audience be able to follow which piece exactly you're talking
             about.  You can do this with a laser pointer, but (click) it's
-            better if you can.
+            better if you embed this information into the slides.
           </aside>
         </section>
         <section>
-          <h2>The Audience Isn’t Looking At Your Laptop</h2>
+          <h2>The Audience <br> Isn’t Looking <br> At Your Laptop</h2>
           <aside class="notes">
             The important principle to remember about slides with code on them
             is that your audience isn't looking over your shoulder at your
@@ -428,11 +431,99 @@ There is a small mailbox here.
           </aside>
         </section>
         <section>
-          <h2>The Audience Doesn’t Have Your Code In An Editor</h2>
+          <h2>The Audience Doesn’t <br> Have Your Code <br> In An Editor</h2>
           <aside class="notes">
-            Your audience also doesn't have your code open in an editor.  They
-            have to keep the entire state of the code in their brain.
+            Your audience also doesn't have your code open in an editor.
+            They're not running it in a terminal.  They have to keep the entire
+            state of the code in their brain.
           </aside>
+        </section>
+        <section>
+          <img src="brain-syntax.jpg">
+          <aside class="notes">
+            One trick that you can use to help keep this in mind is to close
+            your eyes and try to imagine re-constructing your whole example
+            from scratch.  Maybe even try typing it with your eyes closed.  If
+            you - the person who is familiar enough with this material to write
+            a talk about it - can't <em>easily</em> do this in your head, then
+            how do you expect your audience, who is new to the material, to do
+            it?  Also, as this diagram shows, you should use syntax
+            highlighting in your presentation, as various syntax colors
+            activate different regions in the brain.
+          </aside>
+        </section>
+
+        <section>
+          <h1>Step 3</h1>
+          <h2><i>Data</i></h2>
+        </section>
+        <section>
+          <h3>Use Real Data</h3>
+          <div class="fragment">
+            <img src="coda-hale-marketing-consultant.png">
+            <br>
+            <code>
+              coda-hale-marketing-consultant.png
+            </code>
+          </div>
+          <aside class="notes">
+            If you're going to be presenting to a technical audience, they're
+            going to be able to smell bullshit.
+          </aside>
+        </section>
+        <section>
+          <h1>Cite Your Sources</h1>
+          <h2 class="fragment"><i>(https://short-links/please)</i></h2>
+        </section>
+        <section>
+          <img style="max-height: 500px;" src="no-axes.png">
+          <h3><span class="fragment">LABEL</span> <span class="fragment">YOUR</span> <span class="fragment">AXES</span></h3>
+          <aside class="notes">
+            For the love of all that is holy, (click) LABEL (click) YOUR
+            (click) AXES.  What is happening in this graph?  Is it awesome, or
+            is it terrible?  How would I know?  Of course you shouldn't rely on
+            the slide alone to communicate this information - you
+            should <em>say</em> what your axes are as well.
+          </aside>
+        </section>
+        <section>
+          <h1>Tips &amp; Tricks</h1>
+        </section>
+        <section>
+          <h1>Don’t Use Powerpoint</h1>
+          <h2 class="fragment"><code>
+              <a href="http://norvig.com/Gettysburg/">http://norvig.com/<br>Gettysburg/</a>
+            </code>
+          </h2>
+        </section>
+        <section>
+          <h2>Get Comfortable <br> With A Tool</h2>
+          <h3 class="fragment">Use Your Existing Tools</h3>
+          <div class="fragment">
+            <code>emacs</code>,&nbsp; <code>vim</code>,&nbsp; Sublime Text,&nbsp;<br>
+            <code>git</code>,&nbsp; <code>pygments</code>,&nbsp; <code>grunt</code>,&nbsp;
+            <code>curl</code>.
+          </div>
+        </section>
+        <section>
+          <h1><code>reveal.js</code></h1>
+          <h2 class="fragment"><code>
+              http://lab.hakim.se/<br>reveal-js/
+            </code>
+          </h2>
+          <aside></aside>
+        </section>
+        <section>
+          <img src="pycode.png" style="border: 0; background:">
+        </section>
+        <section>
+          <h2 class="fragment">I Am Tech Talk</h2>
+          <h2 class="fragment">And So Can You</h2>
+        </section>
+        <section>
+          <code>
+            <h1>?</h1>
+          </code>
         </section>
       </div>
     </div>
