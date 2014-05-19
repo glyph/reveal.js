@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
   <head>
@@ -23,12 +23,12 @@
     <!-- For syntax highlighting -->
     <!-- <link rel="stylesheet" href="lib/css/zenburn.css"> -->
 
-    <link rel="stylesheet" href="lib/css/tomorrow-night-bright.css"></link>
+    <link rel="stylesheet" href="lib/css/tomorrow-night-bright.css">
 
     <!-- If the query includes 'print-pdf', use the PDF print sheet -->
-    <script>
-      document.write('<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
-    </script>
+    <!-- <script> -->
+    <!--   document.write('<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' ); -->
+    <!-- </script> -->
 
     <!--[if lt IE 9]>
 	<script src="lib/js/html5shiv.js"></script>
@@ -183,25 +183,25 @@
         <section>
           <h2>A Time-Trusted Technique <br> For Being Boring</h2>
           <div style="-webkit-column-count: 2; height: 18em;">
-          <ul style="padding-top: 1em">
-            <li>Put lots of bullets
-            <li>on your slides
-            <li>be sure they summarize
-            <li>every point you’re going to make
-            <li>turn away from the audience
-            <li>and read them word for word
-          </ul>
-          <ul style="padding-top: 1em">
-            <li>You can tell
-            <li>you’re doing it right
-            <li>when you have to resort to multiple columns
-            <li>and even then
-            <li>not all the bullets quite fit
-            <li style="font-size: 75%;" class="fragment">so you have to start shrinking the font size on some of them
-            <li style="font-size: 50%" class="fragment">because it’s really
-              important to get all those words onto a slide because otherwise
-              where are you going to read all of them from?
-          </ul>
+            <ul style="padding-top: 1em">
+              <li>Put lots of bullets
+              <li>on your slides
+              <li>be sure they summarize
+              <li>every point you’re going to make
+              <li>turn away from the audience
+              <li>and read them word for word
+            </ul>
+            <ul style="padding-top: 1em">
+              <li>You can tell
+              <li>you’re doing it right
+              <li>when you have to resort to multiple columns
+              <li>and even then
+              <li>not all the bullets quite fit
+              <li style="font-size: 75%;" class="fragment">so you have to start shrinking the font size on some of them
+              <li style="font-size: 50%" class="fragment">because it’s really
+                important to get all those words onto a slide because otherwise
+                where are you going to read all of them from?
+            </ul>
           </div>
         </section>
         <section>
@@ -214,9 +214,12 @@
           </aside>
         </section>
         <section>
-          <div style="float: left; width: 45%; margin: 0.2em;"><img src="rosalie.jpg" style=""><div>
-              baby</div></div>
-          <div style="float: left; width: 45%; margin: 0.2em;"><img src="placekitten.jpg" style="">
+          <div style="float: left; width: 45%; margin: 0.2em;">
+            <img src="rosalie.jpg" style="">
+            <div>baby</div>
+          </div>
+          <div style="float: left; width: 45%; margin: 0.2em;">
+            <img src="placekitten.jpg" style="">
             <div>kitten</div>
           </div>
           <aside class="notes">
@@ -393,18 +396,21 @@ There is a small mailbox here.
         <section
            data-background-transition="none"
            data-transition="none">
-          <h1>Use <br> Emphasis</h1>
-    <pre><span class="notcode python"><span class="function"><span class="keyword">def</span> <span class="title">write</span><span class="params">(example)</span>:</span>
-    <span class="keyword">while</span> <span class="fragment highlight-current-green">example.has_unnecessary_lines</span>():
-        example.<span class="fragment highlight-current-green">delete_those_lines</span>()</code></pre>
-        </section>
           <aside class="notes">
-            It doesn't cost any extra to use a big font, but from some of the
-            tiny, tiny code samples I've seen up on projectors, you'd think it
-            does.
+            When you're discussing a piece of code, even one you've
+            aggressively trimmed to fit on a slide, you will naturally move
+            from one portion of it to another.  It's important that your
+            audience be able to follow which piece exactly you're talking
+            about.
           </aside>
-      </div>
-    </div>
+          <h1>Use <br> Emphasis</h1>
+          <pre><span class="notcode python"><span class="function"><span class="keyword">def</span> <span class="title">write</span><span class="params">(example)</span>:</span>
+    <span class="keyword">while</span> <span class="fragment highlight-current-green">example.has_unnecessary_lines</span>():
+        example.<span class="fragment highlight-current-green">delete_those_lines</span>()</span></pre>
+        </section>
+
+</div>
+</div>
 
     <script src="lib/js/head.min.js"></script>
     <script src="js/reveal.min.js"></script>
