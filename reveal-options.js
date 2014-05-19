@@ -8,6 +8,7 @@ Reveal.initialize({
     center: true,
 
     theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+    maxScale: 2.0,
     // transition: 'zoom', // default/cube/page/concave/zoom/linear/fade/none
 
     // Parallax scrolling
